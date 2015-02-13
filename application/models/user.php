@@ -22,7 +22,18 @@ class User extends CI_Model {
     private $password;
 
     /** Getters and Setters **/
-
+    public function set_uid ($uid) {
+        $this->uid = $uid;
+    }
+    public function set_name ($name) {
+        $this->name = $name;
+    }
+    public function set_mail ($mail) {
+        $this->mail = $mail;
+    }
+    public function set_password ($password) {
+        $this->password = $password;
+    }
     public function get_uid () {
         return $this->uid;
     }
