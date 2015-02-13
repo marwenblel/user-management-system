@@ -1,6 +1,7 @@
 <?php if (! defined('BASEPATH')) exit('No direct script access allowed!');
 define('USERNAME', 'admin');
 define('PASSWORD', 'admin');
+session_start();
 class Login_Controller extends CI_Controller {
     /**
      * Constructor for Login_Controller controller.
@@ -29,14 +30,29 @@ class Login_Controller extends CI_Controller {
         $this->form_validation->set_rules ('password', 'Password', 'required|trim|xss_clean|callback_check_authentication');
 
         if (!$this->form_validation->run()) {
-          $this->load->view ('login_view');
+            redirect('login_controller', 'refresh');
         } else {
-          $this->load->view ('home_view');
+            $user_session = $this->session->userdata('logged_in');
+            $this->load->view ('home_view', $user_session);
         }
     }
     public function check_authentication ($password) {
         $username = $this->input->post ('username');
-        if ($username == USERNAME AND $password == PASSWORD) {
+        // Load User Model.
+        $this->load->model ('user');
+        $user = new User();
+        $user->set_name($username);
+        $user->set_password($password);
+        if ($user->connect()) {
+            // Create a user session
+            $user_session = array();
+            foreach ($user->connect() as $row) {
+                $user_session = array(
+                    'user_id'   => $row->uid,
+                    'user_name' => $row->name,
+                );
+            }
+            $this->session->set_userdata ('logged_in', $user_session);
             $ret_value = TRUE;
         } else {
             $this->form_validation->set_message ('check_authentication', 'Invalid username and password!');
@@ -44,5 +60,15 @@ class Login_Controller extends CI_Controller {
         }
         return $ret_value;
     }
+
+    /**
+     * Logout function.
+     */
+    public function logout () {
+        $this->session->unset_userdata('logged_in');
+        session_destroy();
+        redirect('login_controller', 'refresh');
+    }
+
 
 }

@@ -49,5 +49,20 @@ class User extends CI_Model {
         return $this->password;
     }
 
+    /** Others functions **/
+    public function connect () {
+        $this->db->select ('uid, name, mail, password');
+        $this->db->from ('users');
+        $this->db->where ('name', $this->get_name());
+        $this->db->where ('password', MD5($this->get_password()));
+        $this->db->limit (1);
+
+        $query = $this->db->get ();
+        if ($query->num_rows() == 1) {
+           return $query->result ();
+        } else {
+            return FALSE;
+        }
+    }
 
 }
