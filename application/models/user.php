@@ -1,5 +1,7 @@
 <?php
 class User extends CI_Model {
+    const DB_TABLE    = 'users';
+    const DB_TABLE_PK = 'uid';
     /**
      * User unique identifier.
      * @var int
@@ -46,4 +48,6 @@ class User extends CI_Model {
     public function get_password () {
         return $this->password;
     }
+
+
 }
