@@ -1,0 +1,39 @@
+CREATE DATABASE `user_management_system`
+COLLATE = 'utf8_general_ci';
+
+CREATE TABLE `users` (
+`uid` INT(10) UNSIGNED DEFAULT '0' COMMENT 'Primary key: User unique ID',
+`name` VARCHAR(60) NOT NULL DEFAULT '' COMMENT 'Unique user name.',
+`mail` VARCHAR(254) NULL DEFAULT '' COMMENT 'User email address.',
+`pasword` VARCHAR(128) NOT NULL DEFAULT '' COMMENT 'USer password (hashed).',
+PRIMARY KEY (`uid`),
+UNIQUE INDEX `name` (`name`),
+INDEX `mail` (`mail`) 
+)
+COMMENT = 'Stores user datas',
+COLLATE = 'utf8_general_ci';
+
+CREATE TABLE `roles` (
+`rid` INT(10) UNSIGNED DEFAULT '0' COMMENT 'Primary key: Role unique ID',
+`name` VARCHAR(60) NOT NULL DEFAULT '' COMMENT 'Unique role name.',
+PRIMARY KEY (`rid`),
+UNIQUE INDEX `name` (`name`) 
+)
+COMMENT = 'Stores role data',
+COLLATE = 'utf8_general_ci';
+CREATE TABLE `users_roles` (
+`uid` INT(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Primary key: users.uid for user.',
+`rid` INT(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Primary key: roles.rid for role.',
+PRIMARY KEY (`uid`, `rid`),
+INDEX `rid` (`rid`)
+)
+COMMENT='Maps users to roles.'
+COLLATE='utf8_general_ci';
+INSERT INTO `roles` (rid, name) values 
+(1, 'anonymous user'),
+(2, 'authenticated user'),
+(3, 'administrator');
+
+CREATE USER 'user_ms'@'localhost' IDENTIFIED BY '123ABC**';
+GRANT USAGE ON *.* TO 'user_ms'@'localhost';
+GRANT SELECT, EXECUTE, SHOW VIEW, ALTER, ALTER ROUTINE, CREATE, CREATE ROUTINE, CREATE TEMPORARY TABLES, CREATE VIEW, DELETE, DROP, EVENT, INDEX, INSERT, REFERENCES, TRIGGER, UPDATE, LOCK TABLES  ON `user\_management\_system`.* TO 'user_ms'@'localhost' WITH GRANT OPTION;
