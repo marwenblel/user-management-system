@@ -1,68 +1,99 @@
 <?php
-class User extends CI_Model {
+class User extends My_Model {
     const DB_TABLE    = 'users';
     const DB_TABLE_PK = 'uid';
     /**
      * User unique identifier.
      * @var int
      */
-    private $uid;
+    public $uid;
     /**
      * User unique name
      * @var String
      */
-    private $name;
+    public $name;
     /**
      * User email.
      * @var String
      */
-    private $mail;
+    public $mail;
     /**
      * User password
      * @var String
      */
-    private $password;
+    public $password;
 
-    /** Getters and Setters **/
-    public function set_uid ($uid) {
-        $this->uid = $uid;
-    }
-    public function set_name ($name) {
-        $this->name = $name;
-    }
-    public function set_mail ($mail) {
-        $this->mail = $mail;
-    }
-    public function set_password ($password) {
-        $this->password = $password;
-    }
-    public function get_uid () {
-        return $this->uid;
-    }
-    public function get_name () {
-        return $this->name;
-    }
-    public function get_mail () {
-        return $this->mail;
-    }
-    public function get_password () {
-        return $this->password;
+    /**
+     * Load from the database.
+     */
+    public function load_by_name () {
+        $query = $this->db->get_where($this::DB_TABLE, array(
+            'name' => $this->name,
+        ));
+        $this->populate($query->row());
     }
 
-    /** Others functions **/
+    /**
+     * Load from the database.
+     */
+    public function load_by_name_password () {
+        $query = $this->db->get_where($this::DB_TABLE, array(
+            'name'     => $this->name,
+            'password' => MD5($this->password),
+        ));
+        $this->populate($query->row());
+    }
+    /**
+     * connect method must return FALSE or
+     * Connect function: Test user credentials login and password from database.
+     * @return boolean
+     */
     public function connect () {
-        $this->db->select ('uid, name, mail, password');
-        $this->db->from ('users');
-        $this->db->where ('name', $this->get_name());
-        $this->db->where ('password', MD5($this->get_password()));
-        $this->db->limit (1);
+        $this->load_by_name_password();
+        if ($this->uid == NULL) {
+            return FALSE;
+        } else {
+            return $this;
+        }
 
-        $query = $this->db->get ();
-        if ($query->num_rows() == 1) {
-           return $query->result ();
+    }
+
+    /**
+     * Get_roles_names function.
+     * @return array of roles names; Example array(0 => 'administrator', 1 => 'authenticated user')
+     */
+    public function get_roles_names () {
+        // Load Users_roles Model.
+        $this->load->model ('Users_roles');
+        $users_roles = new Users_roles();
+        $users_roles->uid = $this->uid;
+        $roles_list = $users_roles->get_roles_list();
+
+        $names_list = array();
+        // Load Roles Model.
+        $this->load->model ('Role');
+        foreach ($roles_list as $key => $rid) {
+            $role = new Role();
+            $role->load($rid);
+            $names_list[$key] = $role->name;
+        }
+        return $names_list;
+    }
+
+    /**
+     * User is administrator or not.
+     * @return boolean
+     */
+    public function is_administrator () {
+        if (in_array('administrator', $this->get_roles_names())) {
+          return TRUE;
         } else {
             return FALSE;
         }
     }
 
 }
+
+
+
+

@@ -8,14 +8,31 @@ class My_Model extends CI_Model {
      * Create record.
      */
     private function insert () {
+        $this->{$this::DB_TABLE_PK} = $this->get_next_id();
         $this->db->insert($this::DB_TABLE, $this);
         $this->{$this::DB_TABLE_PK} = $this->db->insert_id();
+    }
+
+    /**
+     * Get Max id +1.
+     * @return int
+     */
+    public function get_next_id () {
+        $this->db->select_max($this::DB_TABLE_PK);
+        $this->db->limit (1);
+        $query = $this->db->get($this::DB_TABLE);
+        $result = $query->result ();
+
+        foreach ($result as $row) {
+          $ret_value = $row->{$this::DB_TABLE_PK};
+        }
+        return $ret_value + 1;
     }
     /**
      * Update record.
      */
     private function update () {
-        $this->db->update($this::DB_TABLE, $this, $this::DB_TABLE_PK);
+        $this->db->update($this::DB_TABLE, $this, array($this::DB_TABLE_PK => $this->{$this::DB_TABLE_PK}));
     }
     /**
      * Populate from an array or a standard class.
@@ -36,6 +53,7 @@ class My_Model extends CI_Model {
         ));
         $this->populate($query->row());
     }
+
     /**
      * Delete the current record.
      */
